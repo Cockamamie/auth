@@ -7,25 +7,31 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PhotosApp.Areas.Identity.Data;
 using PhotosApp.Services.TicketStores;
 
 namespace PhotosApp.Data
 {
     public static class PhotosAppDataExtensions
     {
-        public static void PrepareData(this IHost host)
+        public static async Task PrepareData(this IHost host)
         {
             using (var scope = host.Services.CreateScope())
             {
                 try
                 {
-                    var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+                    var serviceProvider = scope.ServiceProvider;
+                    var env = serviceProvider.GetRequiredService<IWebHostEnvironment>();
                     if (env.IsDevelopment())
                     {
-                        scope.ServiceProvider.GetRequiredService<PhotosDbContext>().Database.Migrate();
+                        serviceProvider.GetRequiredService<PhotosDbContext>().Database.Migrate();
+                        serviceProvider.GetRequiredService<UsersDbContext>().Database.Migrate();
 
-                        var photosDbContext = scope.ServiceProvider.GetRequiredService<PhotosDbContext>();
+                        var photosDbContext = serviceProvider.GetRequiredService<PhotosDbContext>();
                         photosDbContext.SeedWithSamplePhotosAsync().Wait();
+
+                        var usersManager = serviceProvider.GetRequiredService<UserManager<PhotosAppUser>>();
+                        SeedWithSampleUsersAsync(usersManager).Wait();
                     }
                 }
                 catch (Exception e)
