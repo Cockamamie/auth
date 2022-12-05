@@ -24,14 +24,18 @@ namespace PhotosApp.Data
                     var env = serviceProvider.GetRequiredService<IWebHostEnvironment>();
                     if (env.IsDevelopment())
                     {
-                        serviceProvider.GetRequiredService<PhotosDbContext>().Database.Migrate();
-                        serviceProvider.GetRequiredService<UsersDbContext>().Database.Migrate();
+                        await serviceProvider.GetRequiredService<PhotosDbContext>().Database.MigrateAsync();
+                        await serviceProvider.GetRequiredService<UsersDbContext>().Database.MigrateAsync();
+                        await serviceProvider.GetRequiredService<TicketsDbContext>().Database.MigrateAsync();
 
                         var photosDbContext = serviceProvider.GetRequiredService<PhotosDbContext>();
-                        photosDbContext.SeedWithSamplePhotosAsync().Wait();
+                        await photosDbContext.SeedWithSamplePhotosAsync();
 
                         var usersManager = serviceProvider.GetRequiredService<UserManager<PhotosAppUser>>();
-                        SeedWithSampleUsersAsync(usersManager).Wait();
+                        await SeedWithSampleUsersAsync(usersManager);
+                        
+                        var ticketsDbContext = serviceProvider.GetRequiredService<TicketsDbContext>();
+                        await ticketsDbContext.SeedWithSampleTicketsAsync();
                     }
                 }
                 catch (Exception e)
